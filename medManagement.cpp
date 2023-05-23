@@ -1,5 +1,7 @@
 #include <iostream>
-#include <string.h>
+#include <string>
+#include <sstream>
+#include <cstring>
 #include <stdlib.h>
 #include <iomanip>
 
@@ -8,210 +10,380 @@ using namespace std;
 struct medList
 {
   int medID;
-  char medName[20];
+  string medName;
   int medCount;
   double price;
 };
+
+// struct transactionDetails
+// {
+//   int id;
+//   int oid;
+//   string date;
+//   string mop;
+//   transactionDetails(int _id, int _oid, string _date, string _mop, string _ps) : id(_id), oid(_oid), date(_date), mop(_mop){};
+// };
 
 struct OrderDetails
 {
   int orderID;
   int mcount;
-  char clientName[20];
-  char paymentStatus[20];
+  string clientName;
+  string paymentStatus;
   double amount;
+  string date;
   medList meds[10];
   OrderDetails *nextOrder;
 
-  OrderDetails(int id,char nm[20],char ps[20],double amt,medList medss[10],int mcount){
+  OrderDetails(int id, string nm, string ps, double amt, string dt, medList medss[10], int mcount)
+  {
     orderID = id;
     this->mcount = mcount;
-    strcpy(clientName,nm);
-    strcpy(paymentStatus,ps);
+    clientName = nm;
+    paymentStatus = ps;
     amount = amt;
-    for (int i = 0; i<10; i++){
+    date = dt;
+    for (int i = 0; i < 10; i++)
+    {
       meds[i] = medss[i];
     }
     nextOrder = nullptr;
   }
-} *orderHead;
-
-struct InventoryList {
-  medList medicine;
-  InventoryList *next;
-
-  InventoryList(medList m): medicine(m), next(nullptr){};
-
 };
 
-class Inventory {
-  InventoryList *head;
-  OrderDetails *orderHead = nullptr;
-  public:
-  Inventory():head(nullptr){};
+struct InventoryList
+{
+  medList medicine;
+  InventoryList *next;
+  InventoryList(medList m) : medicine(m), next(nullptr){};
+};
 
-  void addMedicine() {
+class medManagement
+{
+  InventoryList *head;
+  OrderDetails *orderHead;
+
+public:
+  medManagement() : head(nullptr), orderHead(nullptr){};
+
+  void addMedicine()
+  {
     system("CLS");
-    InventoryList *newMed;
-    char medN[20];
+
+    bool f = false;
+
+    string medN;
+    string _mprice;
+    string _mc;
+
     int medID;
     double medPrice;
     int medC;
 
+    while (!f)
+    {
+      string _mid;
+      medList med;
+      cout << "ENTER MEDICINE ID: ";
+      getline(cin, _mid);
+      istringstream isid(_mid);
 
-    medList med;
-    cout<<"ENTER MED ID: ";
-    cin>>medID;
-    cout<<"ENTER MED NAME: ";
-    cin>>medN;
-    cout<<"ENTER MED PRICE: ";
-    cin>>medPrice;
-    cout<<"ENTER MED QUANTITY: ";
-    cin>>medC;
+      if (isid >> medID)
+      {
+        cout << "ENTER MEDICINE NAME: ";
 
-    med.medID = medID;
-    strcpy(med.medName,medN);
-    med.price = medPrice;
-    med.medCount = medC;
+        getline(cin, medN);
+        cout << "ENTER MEDICINE PRICE: ";
 
-    newMed = new InventoryList(med);
+        getline(cin, _mprice);
+        istringstream isp(_mprice);
 
-    if (head == nullptr) {
-      head = newMed;
-    }
-    else {
-      InventoryList *temp = head;
-      while (temp->next != nullptr) {
-        temp = temp->next;
+        if (isp >> medPrice)
+        {
+          cout << "ENTER MEDICINE QUANTITY: ";
+          getline(cin, _mc);
+          istringstream isc(_mc);
+
+          if (isc >> medC)
+          {
+            med.medName = medN;
+            med.medCount = medC;
+            med.medID = medID;
+            med.price = medPrice;
+            if (head == nullptr)
+            {
+              head = new InventoryList(med);
+            }
+            else
+            {
+              InventoryList *temp = head;
+              while (temp->next != nullptr)
+              {
+                temp = temp->next;
+              }
+              temp->next = new InventoryList(med);
+            }
+            f = true;
+          }
+          else
+          {
+            cout << "INVALID NO. OF MEDS.." << endl;
+            system("PAUSE");
+            system("CLS");
+          }
+        }
+        else
+        {
+          cout << "INVALID PRICE.." << endl;
+          system("PAUSE");
+          system("CLS");
+        }
       }
-      temp->next = newMed;
+      else
+      {
+        cout << "INVALID ID..." << endl;
+        system("PAUSE");
+        system("CLS");
+      }
+    }
+    if (f)
+    {
+      cout << "MEDICINE ADDED SUCCESSFULLY..!" << endl;
+      system("PAUSE");
     }
   }
 
-  void showInventory() {
+  int showInventory()
+  {
     system("CLS");
     InventoryList *tempp = head;
-    if ( tempp == nullptr)
+    if (tempp == nullptr)
     {
-      cout<<"No Medicines Available."<<endl;
+      cout << "No Medicines Available." << endl;
       system("PAUSE");
     }
-    else{
-        cout<<left<<setw(10)<<"ID"<<left<<setw(15)<<"NAME"<<left<<setw(10)<<"QUANTITY"<<left<<setw(10)<<"PRICE(unit)"<<endl;
-      while (tempp != nullptr) {
-
-        cout<<left<<setw(10)<<tempp->medicine.medID<<left<<setw(15)<<tempp->medicine.medName<<left<<setw(10)<<tempp->medicine.medCount<<left<<setw(10)<<tempp->medicine.price<<endl;
+    else
+    {
+      int i = 0;
+      string opt;
+      cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+      cout << left << setw(80) << "                           MEDICAL MANAGEMENT SYSTEM                            " << endl;
+      cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+      cout << left << setw(80) << "| NO.  |   MEDICINE ID   |   MEDICINE NAME   |   PRICE (unit)   |   QUANTITY   |" << endl;
+      cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+      while (tempp != nullptr)
+      {
+        ++i;
+        cout << left << setw(1) <<"|";
+        cout << right << setw(6) << i;
+        cout << left << setw(1) << "|";
+        cout << right << setw(17) << tempp->medicine.medID;
+        cout << left << setw(1) << "|";
+        cout << right << setw(19) << tempp->medicine.medName;
+        cout << left << setw(1) << "|";
+        cout << right << setw(18) << tempp->medicine.price;
+        cout << left << setw(1) << "|";
+        cout << right << setw(14) << tempp->medicine.medCount;
+        cout << left << setw(1) << "|"<<endl;
 
         tempp = tempp->next;
       }
-      system("PAUSE");
+      cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+      cout << right << setw(80) << "|                                                                    BACK[9]   |" << endl;
+      cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+
+      do
+      {
+        cout << endl
+             << "SELECT (option): ";
+        getline(cin, opt);
+        istringstream iss(opt);
+
+        if (iss >> i)
+        {
+          if (i == 9)
+          {
+            return 0;
+          }
+        }
+        else
+        {
+          cout << "retry.." << endl;
+        }
+      } while (true);
     }
+    return 0;
   }
 
-  void inventoryMENU() {
+  void inventoryMENU()
+  {
     int mo;
-    do {
+    do
+    {
       system("CLS");
-      cout<<"1. SHOW INVENTORY"<<endl;
-      cout<<"2. UPDATE MED DETAILS"<<endl;
-      cout<<"3. ADD MED"<<endl;
-      cout<<"SELECT (option): ";
-      cin>>mo;
+      cout << endl;
 
-      switch (mo)
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|            MEDICAL MANAGEMENT SYSTEM           |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "|    SHOW [1]                      UPDATE [2]    |" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "|    ADD [3]                                     |" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|                                    BACK [9]    |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << endl
+           << "SELECT (option): ";
+      string opt;
+      getline(cin, opt);
+      istringstream iss(opt);
+      if (iss >> mo)
       {
-      case 1:
-        this->showInventory();
-        break;
-      case 2:
-        this->updateMed();
-        break;
-      case 3:
-        this->addMedicine();
-        break;
-      default:
-        break;
+        switch (mo)
+        {
+        case 1:
+          this->showInventory();
+          cin.ignore();
+          break;
+        case 2:
+          this->updateMed();
+          cin.ignore();
+          break;
+        case 3:
+          this->addMedicine();
+          cin.ignore();
+          break;
+        default:
+          break;
+        }
+      }
+      else
+      {
+        cout << "Invalid option. Please enter a valid integer." << endl;
       }
     } while (mo != 9);
   }
 
-  void updateMed() {
+  void updateMed()
+  {
     system("CLS");
     InventoryList *tempp = head;
     int id;
-    cout<<"ENTER THE MED-ID : ";
-    cin>>id;
-    bool flag = false;
-    while (tempp != nullptr) {
-      if (tempp->medicine.medID == id) {
-        flag = true;
-        int opt;
-        do {
-          system("CLS");
-          cout<<"1. Update MedName"<<endl;
-          cout<<"2. Update Price"<<endl;
-          cout<<"3. Update Quantity"<<endl;
-          cout<<endl;
-          cout<<"PRESS '9' (BACK)"<<endl;
-          cout<<endl;
-          cout<<"Enter your choice: ";
-          cin>>opt;
-          switch (opt) {
+    string opt;
+    cout << "ENTER THE MED-ID : ";
+    getline(cin, opt);
+    istringstream iss(opt);
+    if (iss >> id)
+    {
+      bool flag = false;
+      while (tempp != nullptr)
+      {
+        if (tempp->medicine.medID == id)
+        {
+          flag = true;
+          int opt;
+          do
+          {
+            system("CLS");
+            cout << endl;
+
+            cout << left << setw(50) << "--------------------------------------------------" << endl;
+            cout << left << setw(50) << "|            MEDICAL MANAGEMENT SYSTEM           |" << endl;
+            cout << left << setw(50) << "--------------------------------------------------" << endl;
+            cout << left << setw(50) << "|                                                |" << endl;
+            cout << left << setw(50) << "|    NAME [1]                       PRICE [2]    |" << endl;
+            cout << left << setw(50) << "|                                                |" << endl;
+            cout << left << setw(50) << "|    QUANTITY [3]                                |" << endl;
+            cout << left << setw(50) << "|                                                |" << endl;
+            cout << left << setw(50) << "--------------------------------------------------" << endl;
+            cout << left << setw(50) << "|                                    BACK [9]    |" << endl;
+            cout << left << setw(50) << "--------------------------------------------------" << endl;
+            cout << endl
+                 << "SELECT (option): ";
+            cin >> opt;
+            switch (opt)
+            {
             case 1:
               system("CLS");
               char mn[20];
-              cout<<"Set Name ("<<tempp->medicine.medName<<")"<<" : ";
-              cin>>mn;
-              strcpy(tempp->medicine.medName,mn);
+              cout << "Set Name (" << tempp->medicine.medName << ")"
+                   << " : ";
+              cin >> mn;
+              tempp->medicine.medName = mn;
               system("CLS");
-              cout<<"Updated Successfully"<<endl;
+              cout << "Updated Successfully" << endl;
               system("PAUSE");
               break;
             case 2:
               system("CLS");
               double p;
-              cout<<"Set Price ("<<tempp->medicine.medName<<")"<<" : ";
-              cin>>p;
+              cout << "Set Price (" << tempp->medicine.medName << ")"
+                   << " : ";
+              cin >> p;
               tempp->medicine.price = p;
               system("CLS");
-              cout<<"Updated Successfully"<<endl;
+              cout << "Updated Successfully" << endl;
               system("PAUSE");
               break;
             case 3:
-              system("CLS");  
+              system("CLS");
               int q;
-              cout<<"Set Quantity ("<<tempp->medicine.medName<<")"<<" : ";
-              cin>>q;
+              cout << "Set Quantity (" << tempp->medicine.medName << ")"
+                   << " : ";
+              cin >> q;
               tempp->medicine.medCount = q;
               system("CLS");
-              cout<<"Updated Successfully"<<endl;
+              cout << "Updated Successfully" << endl;
               system("PAUSE");
               break;
             default:
               break;
-          }
-        } while(opt != 9);
-        break;
+            }
+          } while (opt != 9);
+          break;
+        }
+        tempp = tempp->next;
       }
-      tempp = tempp->next;
+      if (flag)
+      {
+        system("PAUSE");
+      }
+      else
+      {
+        cout << "NO MEDICINES FOUND WITH ID (" << id << ")" << endl;
+        system("PAUSE");
+      }
     }
-    if (flag) {
-      system("PAUSE");
-    }
-    else {
-      cout<<"NO MEDICINES FOUND WITH ID ("<<id<<")"<<endl;
+    else
+    {
+      cout << "INVALID INPUT TYPE.." << endl;
       system("PAUSE");
     }
   }
-  void orderMENU() {
+  void orderMENU()
+  {
     int mo;
-    do {
+    do
+    {
       system("CLS");
-      cout<<"1. SHOW ORDERS"<<endl;
-      cout<<"2. UPDATE ORDER DETAILS"<<endl;
-      cout<<"3. NEW ORDER"<<endl;
-      cout<<"SELECT (option): ";
-      cin>>mo;
+      cout << endl;
+
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|            MEDICAL MANAGEMENT SYSTEM           |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "|    SHOW ORDERS [1]         DELETE ORDER [2]    |" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "|    PLACE ORDER [3]         MAKE PAYMENT [4]    |" << endl;
+      cout << left << setw(50) << "|                                                |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << left << setw(50) << "|                                    BACK [9]    |" << endl;
+      cout << left << setw(50) << "--------------------------------------------------" << endl;
+      cout << endl
+           << "SELECT (option): ";
+      cin >> mo;
 
       switch (mo)
       {
@@ -224,110 +396,166 @@ class Inventory {
       case 3:
         this->newOrder();
         break;
+      case 4:
+        this->orderById();
       default:
         break;
       }
     } while (mo != 9);
   }
 
-  int newOrder(){
+  int newOrder()
+  {
     system("CLS");
     InventoryList *temp = head;
-    int id;char nm[20];char ps[20];double amt = 0;medList meds[10];int mcount;
+    int id = 1;
+    string nm;
+    double amt = 0;
+    char date[30];
+    medList meds[10];
+    int mcount;
+    time_t cd = time(nullptr);
+    tm *dt = localtime(&cd);
+    strftime(date, sizeof(date), "%d/%m/%Y %H:%M:%S", dt);
 
-    cout<<"ENTER CLIENT NAME: ";
-    cin>>nm;
-    cout<<"NO. OF MEDICINES TO BE ORDERED: ";
-    cin>>mcount;
+    cout << "ENTER CLIENT NAME: " << endl;
+    cin.ignore();
+    getline(cin, nm);
+    cout << "NO. OF MEDICINES TO BE ORDERED: ";
+    cin >> mcount;
 
-    for (int i = 0; i< mcount; i++) {
+    for (int i = 0; i < mcount; i++)
+    {
       int mid;
       int mc;
-      cout<<"MED ID: ";
-      cin>>mid;
-      if (temp == nullptr) {
-        cout<<"NO MEDICINES AVAILABLE.."<<endl;
+      cout << "MED ID: ";
+      cin >> mid;
+      if (temp == nullptr)
+      {
+        cout << "NO MEDICINES AVAILABLE.." << endl;
         system("PAUSE");
       }
-      else {
+      else
+      {
         bool flag = false;
-        while (temp != nullptr) {
-          if (temp->medicine.medID == mid) {
-            cout<<"ENTER QUANTITY ("<<temp->medicine.medName<<") : ";
-            cin>>mc;
-            if (temp->medicine.medCount >= mc) {
+        while (temp != nullptr)
+        {
+          if (temp->medicine.medID == mid)
+          {
+            cout << "ENTER QUANTITY (" << temp->medicine.medName << ") : ";
+            cin >> mc;
+            if (temp->medicine.medCount >= mc)
+            {
               amt = amt + (temp->medicine.price * mc);
               meds[i].medCount = mc;
               meds[i].price = temp->medicine.price;
               meds[i].medID = temp->medicine.medID;
               temp->medicine.medCount = temp->medicine.medCount - mc;
-              strcpy(meds[i].medName, temp->medicine.medName);
+              meds[i].medName = temp->medicine.medName;
               flag = true;
             }
-            else {
-              cout<<"ORDERED QUANTITY IS ABOVE STOCK AVAILABLE"<<endl;
+            else
+            {
+              cout << "ORDERED QUANTITY IS ABOVE STOCK AVAILABLE" << endl;
               system("PAUSE");
               return 0;
             }
             break;
           }
-          else {
+          else
+          {
             temp = temp->next;
           }
         }
-        if (!flag) {
+        if (!flag)
+        {
           return 0;
         }
       }
     }
 
-    OrderDetails *new_order;
-    char nmm[20];
     char pss[20];
-    strcpy(nmm,nm);
-    strcpy(pss,"PENDING");
+    strcpy(pss, "PENDING");
 
-    if (orderHead == nullptr) {
-      id = 1;
-      new_order = new OrderDetails(id,nmm,pss,amt,meds,mcount);
-      orderHead = new_order;
-      cout<<"Order Received"<<endl;
+    if (orderHead == nullptr)
+    {
+      orderHead = new OrderDetails(id, nm, pss, amt, date, meds, mcount);
+      cout << "Order Received" << endl;
     }
-    else {   
+    else
+    {
       OrderDetails *otemp = this->orderHead;
-      int prevID;
-      while (otemp->nextOrder != nullptr) {
+      while (otemp->nextOrder != nullptr)
+      {
         otemp = otemp->nextOrder;
-        prevID = otemp->orderID;
       }
-      id = prevID;
-      new_order = new OrderDetails(id,nmm,pss,amt,meds,mcount);
-      otemp->nextOrder = new_order;
-      cout<<"Order Received"<<endl;
+      id = otemp->orderID + 1;
+      otemp->nextOrder = new OrderDetails(id, nm, pss, amt, date, meds, mcount);
+      cout << "Order Received" << endl;
     }
 
     return 0;
   }
 
-  int showOrders() {
+  int showOrders()
+  {
     system("CLS");
     OrderDetails *otempp = this->orderHead;
+    int i = 1;
 
-    if (orderHead == nullptr) {
-      cout<<"No Orders."<<endl;
+    if (orderHead == nullptr)
+    {
+      cout << "No Orders." << endl;
       system("PAUSE");
     }
-    else{
-      while (otempp != nullptr) { 
-        cout<<"ORDER ID: "<<otempp->orderID<<endl;
-        cout<<"CLIENT NAME: "<<otempp->clientName<<endl;
-        cout<<"PAYMENT STATUS: "<<otempp->paymentStatus<<endl;
-        cout<<left<<setw(15)<<"MED NAME"<<left<<setw(10)<<"QUANTITY"<<left<<setw(10)<<"PRICE"<<endl;
-        for (int i = 0; i < otempp->mcount; i++){
-          cout<<left<<setw(15)<<otempp->meds[i].medName<<left<<setw(10)<<otempp->meds[i].medCount<<left<<setw(10)<<otempp->meds[i].price<<endl;
-        }
-        cout<<"___________________________________________"<<endl;
-        cout<<right<<setw(40)<<"TOTAL PAYABLE: "<<otempp->amount<<endl;
+    else
+    {
+      cout << left << setw(120) << "------------------------------------------------------------------------------------------------------------------------" << endl;
+      cout << left << setw(1) << "|";
+      cout << left << setw(9) << "   NO.   ";
+      cout << left << setw(1) << "|";
+
+      cout << left << setw(19) << "      ORDER ID     ";
+      cout << left << setw(1) << "|";
+
+      cout << left << setw(30) << "          CLIENT NAME         ";
+      cout << right << setw(1) << "|";
+
+      cout << left << setw(24) << "          DATE";
+      cout << right << setw(1) << "|";
+
+      cout << left << setw(19) << "    ORDER VALUE    ";
+      cout << right << setw(1) << "|";
+
+      cout << left << setw(12) << "   STATUS   ";
+      cout << right << setw(1) << "|" << endl;
+      cout << left << setw(120) << "------------------------------------------------------------------------------------------------------------------------" << endl;
+
+      while (otempp != nullptr)
+      {
+        cout << left << setw(1) << "|";
+        cout << right << setw(9) << i;
+        cout << left << setw(1) << "|";
+
+        cout << right << setw(19) << otempp->orderID;
+        cout << left << setw(1) << "|";
+
+        cout << right << setw(30) << otempp->clientName;
+        cout << right << setw(1) << "|";
+
+        cout << right << setw(24) << otempp->date;
+        cout << right << setw(1) << "|";
+
+        cout << right << setw(19) << otempp->amount;
+        cout << right << setw(1) << "|";
+
+        cout << right << setw(12) << otempp->paymentStatus;
+        cout << right << setw(1) << "|" << endl;
+
+        cout << left << setw(120) << "------------------------------------------------------------------------------------------------------------------------" << endl;
+
+        i = i + 1;
+
         otempp = otempp->nextOrder;
       }
       system("PAUSE");
@@ -336,63 +564,202 @@ class Inventory {
     return 0;
   }
 
-  int deleteOrder() {
+  int deleteOrder()
+  {
     system("CLS");
     OrderDetails *deltemp = orderHead;
     OrderDetails *prev;
+    string _oid;
     int oid;
+    cin.ignore();
+    cout << "ENTER THE ORDER-ID: ";
+    getline(cin, _oid);
+    istringstream iss(_oid);
 
-    cout<<"ENTER THE ORDER-ID: ";
-    cin>>oid;
-
-    if (deltemp == nullptr) {
-      cout<<"No orders."<<endl;
-    }
-    else {
-      while (deltemp != nullptr) {
-        if (deltemp->orderID == oid) {
-          break;
-        }
-        prev = deltemp;
-        deltemp = deltemp->nextOrder;
+    if (iss >> oid)
+    {
+      if (deltemp == nullptr)
+      {
+        cout << "No orders." << endl;
+        system("PAUSE");
       }
-      prev->nextOrder = deltemp->nextOrder;
+      else
+      {
+        while (deltemp != nullptr)
+        {
+          if (deltemp->orderID == oid)
+          {
+            break;
+          }
+          prev = deltemp;
+          deltemp = deltemp->nextOrder;
+        }
+        prev->nextOrder = deltemp->nextOrder;
+        cout << "Order deleted successfully .!" << endl;
+      }
+    }
+    else
+    {
+      cout << "INVALID INPUT TYPE.." << endl;
+      system("PAUSE");
     }
     return 0;
+  }
+
+  void orderById()
+  {
+    system("CLS");
+    OrderDetails *otempp = this->orderHead;
+
+    int _id;
+    cout << "ENTER ORDER-ID: ";
+    cin >> _id;
+
+    if (orderHead == nullptr)
+    {
+      cout << "No Orders." << endl;
+      system("PAUSE");
+    }
+    else
+    {
+      while (otempp != nullptr)
+      {
+        if (otempp->orderID == _id)
+        {
+          double ta = 0;
+
+          cout << right << setw(80) << "--------------------------" << endl;
+          cout << right << setw(55) << "|";
+          cout << left << setw(11) << " ORDER ID: ";
+          cout << left << setw(11) << otempp->orderID;
+          cout << right << setw(3) << "|" << endl;
+          cout << right << setw(80) << "--------------------------" << endl;
+
+          cout << left << setw(13) << "CLIENT NAME: ";
+          cout << left << setw(67) << otempp->clientName << endl;
+          cout << left << setw(16) << "PAYMENT STATUS: ";
+          cout << left << setw(64) << otempp->paymentStatus << endl;
+          cout << endl;
+
+          cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+
+          cout << left << setw(1) << "|";
+          cout << left << setw(5) << " NO. ";
+          cout << left << setw(1) << "|";
+
+          cout << left << setw(25) << "      MEDICINE NAME      ";
+          cout << left << setw(1) << "|";
+
+          cout << left << setw(14) << "   QUANTITY   ";
+          cout << right << setw(1) << "|";
+
+          cout << left << setw(16) << "  PRICE (UNIT)  ";
+          cout << right << setw(1) << "|";
+
+          cout << left << setw(14) << "     AMT.     ";
+          cout << right << setw(1) << "|" << endl;
+
+          cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+
+          for (int i = 0; i < otempp->mcount; i++)
+          {
+
+            cout << left << setw(1) << "|";
+            cout << right << setw(5) << i + 1;
+            cout << left << setw(1) << "|";
+
+            cout << right << setw(25) << otempp->meds[i].medName;
+            cout << left << setw(1) << "|";
+
+            cout << right << setw(14) << otempp->meds[i].medCount;
+            cout << right << setw(1) << "|";
+
+            cout << right << setw(16) << otempp->meds[i].price;
+            cout << right << setw(1) << "|";
+
+            cout << right << setw(14) << otempp->meds[i].price * otempp->meds[i].medCount;
+            cout << right << setw(1) << "|" << endl;
+
+            ta = ta + (otempp->meds[i].price * otempp->meds[i].medCount);
+          }
+
+          cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+          cout << right << setw(64) << "TOTAL PAYABLE: ";
+          cout << right << setw(15) << ta;
+          cout << right << setw(1) << " " << endl;
+          cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+          cout << left << setw(80) << " CHANGE STATUS: PAID [7] PENDING [8]                                 BACK [9]   " << endl;
+          cout << left << setw(80) << "--------------------------------------------------------------------------------" << endl;
+
+          int o;
+          cout << "ENTER [OPTION] :";
+          cin >> o;
+
+          if (o == 7)
+          {
+            otempp->paymentStatus = "PAID";
+            cout << "PAID SUCCESSFULLY ..!" << endl;
+            system("PAUSE");
+          }
+          else if (o == 8)
+          {
+            cout << "PAYMENT UPDATED SUCCESSFULLY ..!" << endl;
+            system("PAUSE");
+          }
+        }
+
+        otempp = otempp->nextOrder;
+      }
+    }
   }
 };
 
 int main()
 {
-  Inventory inv;
+  medManagement mm;
   int op;
 
-  do {
+  do
+  {
     system("CLS");
-    cout<<"1. INVENTORY"<<endl;
-    cout<<"2. ORDERS"<<endl;
-    cout<<"3. LOGOUT"<<endl;
+    cout << endl
+         << endl;
+    cout << left << setw(50) << "--------------------------------------------------" << endl;
+    cout << left << setw(50) << "|            MEDICAL MANAGEMENT SYSTEM           |" << endl;
+    cout << left << setw(50) << "--------------------------------------------------" << endl;
+    cout << left << setw(50) << "|                                                |" << endl;
+    cout << left << setw(50) << "|                                                |" << endl;
+    cout << left << setw(50) << "|    INVENTORY [1]                 ORDERS [2]    |" << endl;
+    cout << left << setw(50) << "|                                                |" << endl;
+    cout << left << setw(50) << "|                                                |" << endl;
+    cout << left << setw(50) << "--------------------------------------------------" << endl;
+    cout << left << setw(50) << "|                                    EXIT [9]    |" << endl;
+    cout << left << setw(50) << "--------------------------------------------------" << endl;
+    cout << endl
+         << "SELECT (option): ";
 
-    cout<<"SELECT (option): ";
-    cin>>op;
+    string opt;
+    getline(cin, opt);
+    istringstream iss(opt);
 
-    switch (op)
+    if (iss >> op)
     {
-    case 1:
-      inv.inventoryMENU();
-      break;
-    case 2:
-      inv.orderMENU();
-      break;
-    case 3:
-      op = 9;
-      break;
-    default:
-      break;
+      switch (op)
+      {
+      case 1:
+        mm.inventoryMENU();
+        op = 0;
+        cin.ignore();
+        break;
+      case 2:
+        mm.orderMENU();
+        op = 0;
+        cin.ignore();
+        break;
+      default:
+        break;
+      }
     }
-  } while(op != 9);
+  } while (op != 9);
   return 0;
 }
-
-
-
